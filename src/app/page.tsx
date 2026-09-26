@@ -3,7 +3,7 @@ import LibrarySection from "@/components/LibrarySection";
 import { IWorkout } from "@/types/workout";
 
 const getWorkouts = async (): Promise<IWorkout[]> => {
-  const res = await fetch("https://api.abcz.workers.dev/api/fitlog", {
+  const res = await fetch("https://api.api-store.workers.dev/api/fitlog", {
     next: { revalidate: 3600 },
   });
   if (!res.ok)

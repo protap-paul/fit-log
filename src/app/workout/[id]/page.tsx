@@ -5,7 +5,7 @@ import WorkoutDetails from "./WorkoutDetails";
 
 const getWorkout = async (id: string): Promise<IWorkout | null> => {
     try {
-        const res = await fetch(`https://api.abcz.workers.dev/api/fitlog/${id}`, {
+        const res = await fetch(`https://api.api-store.workers.dev/api/fitlog/${id}`, {
             next: { revalidate: 3600 },
         });
         if (!res.ok) return null;
