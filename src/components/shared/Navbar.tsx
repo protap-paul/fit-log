@@ -16,9 +16,19 @@ const Navbar = () => {
             <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2'>
 
                 {/* Logo */}
-                <Link href={"/"} className='flex items-center gap-2 shrink-0'>
-                    <Image src={logoImg} alt='FitLog Logo' width={28} height={28} className='object-contain' />
-                    <span className='font-bold text-xl tracking-widest text-white uppercase hidden xs:inline'>
+                <Link
+                    href="/"
+                    className="flex items-center gap-2 shrink-0"
+                >
+                    <Image
+                        src={logoImg}
+                        alt="FitLog Logo"
+                        width={28}
+                        height={28}
+                        className="object-contain"
+                    />
+
+                    <span className="font-bold text-xl tracking-widest text-white uppercase">
                         FitLog
                     </span>
                 </Link>

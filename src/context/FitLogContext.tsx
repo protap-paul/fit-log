@@ -1,74 +1,130 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+    createContext,
+    useContext,
+    useState,
+    useEffect,
+    ReactNode,
+} from "react";
 import { IWorkout } from "@/types/workout";
 
 interface FitLogContextType {
     plan: IWorkout[];
     saved: IWorkout[];
+
     addToPlan: (workout: IWorkout) => boolean;
     removeFromPlan: (id: number) => void;
+
     addToSaved: (workout: IWorkout) => void;
     removeFromSaved: (id: number) => void;
+
     isInPlan: (id: number) => boolean;
     isInSaved: (id: number) => boolean;
 }
 
 const FitLogContext = createContext<FitLogContextType | null>(null);
 
-function loadFromStorage<T>(key: string): T[] {
-    if (typeof window === "undefined") return [];
-    try {
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : [];
-    } catch {
-        return [];
-    }
-}
+export function FitLogProvider({
+    children,
+}: {
+    children: ReactNode;
+}) {
+    // Always start with the same value on server and client
+    const [plan, setPlan] = useState<IWorkout[]>([]);
+    const [saved, setSaved] = useState<IWorkout[]>([]);
 
-export function FitLogProvider({ children }: { children: ReactNode }) {
-    const [plan, setPlan] = useState<IWorkout[]>(() => loadFromStorage("fitlog_plan"));
-    const [saved, setSaved] = useState<IWorkout[]>(() => loadFromStorage("fitlog_saved"));
+    const [isLoaded, setIsLoaded] = useState(false);
 
-    // Persist to localStorage
+    // Load data from localStorage after component mounts
     useEffect(() => {
-        localStorage.setItem("fitlog_plan", JSON.stringify(plan));
-    }, [plan]);
+        try {
+            const storedPlan = localStorage.getItem("fitlog_plan");
+            const storedSaved = localStorage.getItem("fitlog_saved");
 
+            if (storedPlan) {
+                setPlan(JSON.parse(storedPlan));
+            }
+
+            if (storedSaved) {
+                setSaved(JSON.parse(storedSaved));
+            }
+        } catch {
+            console.error("Failed to load FitLog data from localStorage");
+        } finally {
+            setIsLoaded(true);
+        }
+    }, []);
+
+    // Save plan to localStorage
     useEffect(() => {
-        localStorage.setItem("fitlog_saved", JSON.stringify(saved));
-    }, [saved]);
+        if (!isLoaded) return;
+
+        localStorage.setItem(
+            "fitlog_plan",
+            JSON.stringify(plan)
+        );
+    }, [plan, isLoaded]);
+
+    // Save saved workouts to localStorage
+    useEffect(() => {
+        if (!isLoaded) return;
+
+        localStorage.setItem(
+            "fitlog_saved",
+            JSON.stringify(saved)
+        );
+    }, [saved, isLoaded]);
 
     const addToPlan = (workout: IWorkout): boolean => {
         let added = false;
+
         setPlan((prev) => {
             if (prev.length >= 5) return prev;
-            if (prev.find((w) => w.id === workout.id)) return prev;
+
+            if (prev.some((w) => w.id === workout.id)) {
+                return prev;
+            }
+
             added = true;
+
             return [...prev, workout];
         });
+
         return added;
     };
 
     const removeFromPlan = (id: number) => {
-        setPlan((prev) => prev.filter((w) => w.id !== id));
+        setPlan((prev) =>
+            prev.filter((w) => w.id !== id)
+        );
     };
 
     const addToSaved = (workout: IWorkout) => {
         setSaved((prev) => {
-            if (prev.find((w) => w.id === workout.id)) return prev;
+            if (prev.some((w) => w.id === workout.id)) {
+                return prev;
+            }
+
             return [...prev, workout];
         });
     };
 
     const removeFromSaved = (id: number) => {
-        setSaved((prev) => prev.filter((w) => w.id !== id));
+        setSaved((prev) =>
+            prev.filter((w) => w.id !== id)
+        );
     };
 
-    const isInPlan = (id: number) => plan.some((w) => w.id === id);
-    const isInSaved = (id: number) => saved.some((w) => w.id === id);
+    const isInPlan = (id: number) => {
+        return plan.some((w) => w.id === id);
+    };
 
-    const sharedData = {
+    const isInSaved = (id: number) => {
+        return saved.some((w) => w.id === id);
+    };
+
+    const sharedData: FitLogContextType = {
         plan,
         saved,
         addToPlan,
@@ -76,13 +132,11 @@ export function FitLogProvider({ children }: { children: ReactNode }) {
         addToSaved,
         removeFromSaved,
         isInPlan,
-        isInSaved
-    }
+        isInSaved,
+    };
 
     return (
-        <FitLogContext.Provider
-            value={sharedData}
-        >
+        <FitLogContext.Provider value={sharedData}>
             {children}
         </FitLogContext.Provider>
     );
@@ -90,6 +144,12 @@ export function FitLogProvider({ children }: { children: ReactNode }) {
 
 export function useFitLog() {
     const ctx = useContext(FitLogContext);
-    if (!ctx) throw new Error("useFitLog must be used within FitLogProvider");
+
+    if (!ctx) {
+        throw new Error(
+            "useFitLog must be used within FitLogProvider"
+        );
+    }
+
     return ctx;
 }
