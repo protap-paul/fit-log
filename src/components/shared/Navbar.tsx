@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import logoImg from "@/assets/logo.png"
 import { NavLinks } from './NavLinks';
+import NavCounters from './NavCounters';
 
 const Navbar = () => {
 
@@ -30,30 +31,8 @@ const Navbar = () => {
                 <NavLinks />
 
                 {/* Badges */}
-                <div className='flex items-center gap-3' >
-                    <Link
-                        href={"/my-plan"}
-                        className='flex items-center gap-1.5' >
-                        <span className='text-sm text-gray-400 tracking-wide' >
-                            Plan
-                        </span>
+                <NavCounters />
 
-                        <span>
-                            { }
-                        </span>
-                    </Link>
-
-                    <Link
-                        href={""} >
-                        <span>
-                            Saved
-                        </span>
-
-                        <span>
-                            { }
-                        </span>
-                    </Link>
-                </div>
             </div>
         </nav>
     );
